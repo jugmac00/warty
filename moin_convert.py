@@ -20,6 +20,10 @@ def pandoc(in_path, out_path):
     sh.pandoc("-f", "mediawiki", "-t", "commonmark", "-o", out_path, in_path)  # noqa
 
 
+def pandoc_md_to_rst(in_path, out_path):
+    sh.pandoc("-f", "commonmark", "-t", "rst", "-o", out_path, in_path)
+
+
 def frontmatter(title):
     return f"""---
 layout: page
@@ -45,6 +49,7 @@ def convert(moin_path):
     name = str(moin_path).replace("working/moin/", "").replace(".moin", "")
     mw_path = str(moin_path).replace("/moin", "/mediawiki").replace(".moin", ".wiki")
     cm_path = str(moin_path).replace("/moin", "/commonmark").replace(".moin", ".md")
+    rst_path = str(moin_path).replace("/moin", "/restructured").replace(".moin", ".rst")
     shutil.copy(moin_path, mw_path)
 
     sed("s/^ \*/*/g", mw_path)  # noqa
@@ -59,6 +64,7 @@ def convert(moin_path):
 
     pandoc(mw_path, cm_path)
     mdformat.file(cm_path, options={"wrap": "no", "number": True})
+    pandoc_md_to_rst(cm_path, rst_path)
 
     with open(cm_path, "r") as f:
         content = frontmatter(name) + "".join(f.readlines())
